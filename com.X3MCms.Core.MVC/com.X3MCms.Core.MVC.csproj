@@ -11,4 +11,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="Views\Home\Index %28copy%29.cshtml" />
+  </ItemGroup>
 </Project>
