@@ -1,0 +1,23 @@
+version: '3.4'
+
+services:
+  pages:
+    image: ${DOCKER_REGISTRY-ecms}/pages.api:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/Services/Pages/Pages.API/Dockerfile
+    depends_on:
+      - neo4jdb
+  neo4jdb:
+    image: neo4j:latest
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - $HOME/neo4j/neo4j-neo4jdb/conf:/conf
+      - $HOME/neo4j/neo4j-neo4jdb/data:/data
+      - $HOME/neo4j/neo4j-neo4jdb/logs:/logs
+      - $HOME/neo4j/neo4j-neo4jdb/plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    

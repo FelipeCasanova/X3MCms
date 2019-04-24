@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  pages:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=P4ssword
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/root/.aspnet/https/docker-machine-cert.pfx
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ASPNETCORE_HTTPS_PORT=5012
+    ports:
+      - "5010:80"
+      - "5012:443"
+    volumes:
+      - ${HOME}/.microsoft/usersecrets/:/root/.microsoft/usersecrets
+      - ${HOME}/.aspnet/https:/root/.aspnet/https
