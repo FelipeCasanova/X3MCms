@@ -50,7 +50,7 @@ namespace Pages.API.Infrastructure.Repositories
             }
         }
 
-        public void CreatePageAsync(PageData pageData)
+        public async Task CreatePageAsync(PageData pageData)
         {
             if (string.IsNullOrWhiteSpace(pageData.Id))
             {
@@ -59,36 +59,64 @@ namespace Pages.API.Infrastructure.Repositories
 
             using (var client = _context.Factory.Create())
             {
-                client.Cypher
+                await client.Cypher
                     .Create("(page:PageData {pageData})")
                     .WithParam("pageData", pageData)
-                    .ExecuteWithoutResults();
+                    .ExecuteWithoutResultsAsync();
             }
         }
 
-        public void UpdatePageAsync(PageData pageData)
+        public async Task<Boolean> UpdatePageAsync(string pageId, PageData pageData)
         {
             using (var client = _context.Factory.Create())
             {
-                client.Cypher
+                var pages = await client.Cypher
+                  .Match("(page:PageData)")
+                  .Where((PageData page) => page.Id == pageId)
+                  .Return(page => page.As<PageData>())
+                  .ResultsAsync;
+
+                if (pages is null || !pages.Any())
+                {
+                    return false;
+                }
+
+                pageData.Id = pageId;
+
+                await client.Cypher
                     .Match("(page:PageData)")
-                    .Where((PageData page) => page.Id == pageData.Id)
+                    .Where((PageData page) => page.Id == pageId)
                     .Set("page = {pageData}")
-                    .WithParam("page", pageData)
-                    .ExecuteWithoutResults();
+                    .WithParam("pageData", pageData)
+                    .ExecuteWithoutResultsAsync();
+
+                return true;
             }
         }
 
-        public void UpdatePageNameAsync(string pageId, string name)
+        public async Task<Boolean> UpdatePageNameAsync(string pageId, string name)
         {
             using (var client = _context.Factory.Create())
             {
-                client.Cypher
+                var pages = await client.Cypher
+                  .Match("(page:PageData)")
+                  .Where((PageData page) => page.Id == pageId)
+                  .Return(page => page.As<PageData>())
+                  .ResultsAsync;
+
+                if (pages is null || !pages.Any())
+                {
+                    return false;
+                }
+
+                await client.Cypher
                     .Match("(page:PageData)")
                     .Where((PageData page) => page.Id == pageId)
                     .Set("page.Name = {Name}")
                     .WithParam("Name", name)
-                    .ExecuteWithoutResults();
+                    .ExecuteWithoutResultsAsync();
+
+                return true;
             }
         }
 
@@ -101,6 +129,7 @@ namespace Pages.API.Infrastructure.Repositories
                   .Where((PageData page) => page.Id == pageId)
                   .Return(page => page.As<PageData>())
                   .ResultsAsync;
+
                 if (pages is null || !pages.Any())
                 {
                     return false;
@@ -111,6 +140,7 @@ namespace Pages.API.Infrastructure.Repositories
                     .Where((PageData page) => page.Id == pageId)
                     .Delete("page")
                     .ExecuteWithoutResultsAsync();
+
                 return true;
             }
         }

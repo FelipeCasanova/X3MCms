@@ -1,19 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Neo4jClient;
 using Pages.API.Infrastructure;
 using Pages.API.Infrastructure.Filters;
+using Pages.API.Infrastructure.Middlewares;
 using Pages.API.Infrastructure.Repositories;
+using Pages.API.Infrastructure.Services;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Pages.API
@@ -31,11 +41,17 @@ namespace Pages.API
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc()
+                .AddCustomHealthCheck(Configuration)
+                .AddMvc(options =>
+                {
+                    options.Filters.Add(typeof(HttpGlobalExceptionFilter));
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddControllersAsServices();
 
             services.Configure<PagesSettings>(Configuration);
+
+            ConfigureAuthService(services);
 
             // Add framework services.
             services.AddSwaggerGen(options =>
@@ -74,6 +90,8 @@ namespace Pages.API
                     .AllowCredentials());
             });
 
+            RegisterEventBus(services);
+
             services.AddSingleton<NeoServerConfiguration>(provider => {
                 return NeoServerConfiguration
                     .GetConfiguration(new Uri(Configuration.GetValue<string>("Neo4jConnectionString")), "neo4j", "password");
@@ -82,7 +100,15 @@ namespace Pages.API
             services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
             services.AddSingleton<PageDataContext, PageDataContext>();
             services.AddTransient<IPageDataRepository, PageDataRepository>();
+            services.AddTransient<IPageDataService, PageDataService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddTransient<IIdentityService, IdentityService>();
+
             services.AddOptions();
+
+            //configure autofac
+            var container = new ContainerBuilder();
+            container.Populate(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -95,6 +121,21 @@ namespace Pages.API
                 app.UsePathBase(pathBase);
             }
 
+            app.UseHealthChecks("/hc", new HealthCheckOptions()
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+
+            app.UseHealthChecks("/liveness", new HealthCheckOptions
+            {
+                Predicate = r => r.Name.Contains("self")
+            });
+
+            app.UseCors("CorsPolicy");
+
+            ConfigureAuth(app);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -102,7 +143,7 @@ namespace Pages.API
             else
             {
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                // app.UseHsts();
+                //app.UseHsts();
             }
 
             //app.UseHttpsRedirection();
@@ -116,6 +157,72 @@ namespace Pages.API
                    c.OAuthClientId("pagesswaggerui");
                    c.OAuthAppName("Pages Swagger UI");
                });
+
+            ConfigureEventBus(app);
+        }
+
+        private void ConfigureAuthService(IServiceCollection services)
+        {
+            // prevent from mapping "sub" claim to nameidentifier.
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = Configuration.GetValue<string>("IdentityUrl");
+                options.Audience = "pages";
+                options.RequireHttpsMetadata = false;
+            });
+        }
+
+        private void RegisterEventBus(IServiceCollection services)
+        {
+
+        }
+
+        private void ConfigureEventBus(IApplicationBuilder app)
+        {
+
+        }
+
+        protected virtual void ConfigureAuth(IApplicationBuilder app)
+        {
+            if (Configuration.GetValue<bool>("UseLoadTest"))
+            {
+                app.UseMiddleware<ByPassAuthMiddleware>();
+            }
+
+            app.UseAuthentication();
+        }
+    }
+
+    public static class CustomExtensionMethods
+    {
+        public static IServiceCollection AddCustomHealthCheck(this IServiceCollection services, IConfiguration configuration)
+        {
+            var hcBuilder = services.AddHealthChecks();
+
+            hcBuilder.AddCheck("self", () => HealthCheckResult.Healthy());
+
+            hcBuilder
+                .AddNeo4j(
+                    configuration["Neo4jConnectionString"],
+                    configuration["Neo4jUserName"],
+                    configuration["Neo4jPassword"],
+                    "pages-neo4j-check",
+                    tags: new string[] { "neo4jpagesbd" });
+
+            hcBuilder
+                    .AddRabbitMQ(
+                        $"amqp://{configuration["EventBusConnection"]}",
+                        name: "pages-rabbitmqbus-check",
+                        tags: new string[] { "rabbitmqbus" });
+
+            return services;
         }
     }
 }

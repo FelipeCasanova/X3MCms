@@ -1,16 +1,28 @@
 version: '3.4'
 
 services:
-  pages:
+  pages.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_Kestrel__Certificates__Default__Password=P4ssword
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/root/.aspnet/https/docker-machine-cert.pfx
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - ASPNETCORE_HTTPS_PORT=5012
+      - EventBusConnection=${ECMS_AZURE_SERVICE_BUS:-rabbitmq}
+      - Neo4jUserName=${ECMS_NEO4J_USERNAME:-neo4j}
+      - Neo4jPassword=${ECMS_NEO4J_PASSWORD:-password}
     ports:
       - "5010:80"
       - "5012:443"
     volumes:
       - ${HOME}/.microsoft/usersecrets/:/root/.microsoft/usersecrets
       - ${HOME}/.aspnet/https:/root/.aspnet/https
+  
+  webstatus:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - HealthChecks-UI__HealthChecks__1__Name=Pages HTTP Check
+      - HealthChecks-UI__HealthChecks__1__Uri=http://pages.api/hc
+    ports:
+      - "5107:80"

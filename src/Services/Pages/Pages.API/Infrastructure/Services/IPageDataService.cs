@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Pages.API.Model;
 
-namespace Pages.API.Infrastructure.Repositories
+namespace Pages.API.Infrastructure.Services
 {
-    public interface IPageDataRepository
+    public interface IPageDataService
     {
         Task<IEnumerable<PageData>> GetAllPagesAsync();
         Task<IEnumerable<PageData>> GetPageAsync(string id);
