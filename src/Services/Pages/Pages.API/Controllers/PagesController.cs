@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pages.API.Infrastructure.Services;
 using Pages.API.Model;
@@ -10,6 +11,7 @@ using Pages.API.Model;
 namespace Pages.API.Controllers
 {
     [Route("api/v1/[controller]")]
+    [Authorize]
     [ApiController]
     public class PagesController : ControllerBase
     {

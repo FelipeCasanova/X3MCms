@@ -36,7 +36,7 @@ services:
       - Neo4jConnectionString=${ECMS_NEO4J_SERVICE:-http://neo4jdb:7474/db/data}
       - Neo4jUserName=${ECMS_NEO4J_USERNAME:-neo4j}
       - Neo4jPassword=${ECMS_NEO4J_PASSWORD:-password}
-      - IdentityUrl=http://identity.api              #Local: You need to open your local dev-machine firewall at range 5100-5110.
+      - IdentityUrl=http://identity.api               #Local: You need to open your local dev-machine firewall at range 5100-5110.
       - IdentityUrlExternal=http://${ECMS_EXTERNAL_DNS_NAME_OR_IP:-localhost}:5105
     ports:
       - "5010:80"

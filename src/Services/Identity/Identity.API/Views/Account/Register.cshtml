@@ -4,6 +4,7 @@
 }
 <div class="brand-header-block">
     <ul class="container">
+        <li><a asp-area="" asp-controller="Home" asp-action="ReturnToOriginalApplication" asp-route-returnUrl="@ViewData["ReturnUrl"]">Return To Original Application</a></li>
         <li class="active">REGISTER</li>
         <li style="margin-right: 65px;"><a asp-area="" asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]">LOGIN</a></li>
     </ul>
