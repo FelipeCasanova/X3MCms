@@ -11,7 +11,6 @@ using Pages.API.Model;
 namespace Pages.API.Controllers
 {
     [Route("api/v1/[controller]")]
-    [Authorize]
     [ApiController]
     public class PagesController : ControllerBase
     {
@@ -50,6 +49,7 @@ namespace Pages.API.Controllers
 
         // POST api/pages
         [HttpPost]
+        [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         public async Task<ActionResult> PostAsync([FromBody] PageData pageData)
@@ -65,6 +65,7 @@ namespace Pages.API.Controllers
 
         // PUT api/pages/{id}
         [HttpPut("{id}")]
+        [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(List<PageData>), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Created)]
@@ -85,6 +86,7 @@ namespace Pages.API.Controllers
 
         // PUT api/pages/{id}/name/{name}
         [HttpPut("{id}/name/{name}")]
+        [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(List<PageData>), (int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Created)]
@@ -105,6 +107,7 @@ namespace Pages.API.Controllers
 
         // DELETE api/pages/{id}
         [HttpDelete("{id}")]
+        [Authorize]
         [ProducesResponseType(typeof(List<PageData>), (int)HttpStatusCode.NotFound)]
         public async Task<StatusCodeResult> Delete(string id)
         {
