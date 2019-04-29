@@ -36,14 +36,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Certificate\idsrv3test.pfx" />
-    <None Remove="Setup\images.zip" />
     <None Remove="Setup\Users.csv" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Certificate\idsrv3test.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Setup\images.zip" />
     <Content Include="Setup\Users.csv" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 </Project>
