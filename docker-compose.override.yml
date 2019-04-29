@@ -1,6 +1,30 @@
 version: '3.4'
 
 services:
+  sql.data:
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "5433:1433"    # Important: In a production environment your should remove the external port
+
+  rabbitmq:
+    ports:
+      - "15672:15672"  # Important: In a production environment your should remove the external port
+      - "5672:5672"    # Important: In a production environment your should remove the external port
+
+  identity.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - ConnectionString=${ECMS_AZURE_IDENTITY_DB:-Server=sql.data;Database=Microsoft.eCMSContainers.Services.IdentityDb;User Id=sa;Password=Pass@word} 
+      - PagesApiClient=http://${ECMS_EXTERNAL_DNS_NAME_OR_IP:-localhost}:5110
+      - UseCustomizationData=True  
+      - ApplicationInsights__InstrumentationKey=${INSTRUMENTATION_KEY}
+      - OrchestratorType=${ORCHESTRATOR_TYPE}
+    ports:
+      - "5105:80"
+      
   pages.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -9,8 +33,11 @@ services:
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - ASPNETCORE_HTTPS_PORT=5012
       - EventBusConnection=${ECMS_AZURE_SERVICE_BUS:-rabbitmq}
+      - Neo4jConnectionString=${ECMS_NEO4J_SERVICE:-http://neo4jdb:7474/db/data}
       - Neo4jUserName=${ECMS_NEO4J_USERNAME:-neo4j}
       - Neo4jPassword=${ECMS_NEO4J_PASSWORD:-password}
+      - IdentityUrl=http://identity.api              #Local: You need to open your local dev-machine firewall at range 5100-5110.
+      - IdentityUrlExternal=http://${ECMS_EXTERNAL_DNS_NAME_OR_IP:-localhost}:5105
     ports:
       - "5010:80"
       - "5012:443"
@@ -22,7 +49,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://0.0.0.0:80
-      - HealthChecks-UI__HealthChecks__1__Name=Pages HTTP Check
-      - HealthChecks-UI__HealthChecks__1__Uri=http://pages.api/hc
+      - HealthChecks-UI__HealthChecks__1__Name=Identity HTTP Check
+      - HealthChecks-UI__HealthChecks__1__Uri=http://identity.api/hc
+      - HealthChecks-UI__HealthChecks__2__Name=Pages HTTP Check
+      - HealthChecks-UI__HealthChecks__2__Uri=http://pages.api/hc
     ports:
       - "5107:80"

@@ -1,6 +1,15 @@
 version: '3.4'
 
 services:
+  sql.data:
+    image: microsoft/mssql-server-linux:2017-latest
+
+  nosql.data:
+    image: mongo
+  
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    
   neo4jdb:
     image: neo4j:3.5
     ports:
@@ -17,6 +26,14 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
   
+  identity.api:
+    image: ${REGISTRY:-ecms}/identity.api:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/Services/Identity/Identity.API/Dockerfile    
+    depends_on:
+      - sql.data
+      
   pages.api:
     image: ${DOCKER_REGISTRY-ecms}/pages.api:${TAG:-latest}
     build:
@@ -25,6 +42,7 @@ services:
     depends_on:
       - neo4jdb
       - rabbitmq
+      - identity.api
       
   webstatus:
     image: ${REGISTRY:-ecms}/webstatus:${TAG:-latest}
