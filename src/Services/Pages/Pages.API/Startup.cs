@@ -98,9 +98,11 @@ namespace Pages.API
             });
 
             services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
-            services.AddSingleton<PageDataContext, PageDataContext>();
-            services.AddTransient<IPageDataRepository, PageDataRepository>();
-            services.AddTransient<IPageDataService, PageDataService>();
+            services.AddSingleton<PagesContext, PagesContext>();
+            services.AddTransient<IPageRepository, PageRepository>();
+            services.AddTransient<IPageService, PageService>();
+            services.AddTransient<IZoneRepository, ZoneRepository>();
+            services.AddTransient<IZoneService, ZoneService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<IIdentityService, IdentityService>();
 

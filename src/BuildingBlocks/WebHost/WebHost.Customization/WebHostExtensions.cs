@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Hosting.Factories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -6,9 +7,10 @@ using Polly;
 using Polly.Retry;
 using System;
 using System.Data.SqlClient;
+
 namespace Microsoft.AspNetCore.Hosting
 {
-    public static class WebHostExtensions
+    public static class IWebHostExtensions
     {
         public static bool IsInKubernetes(this IWebHost webHost)
         {
@@ -75,5 +77,52 @@ namespace Microsoft.AspNetCore.Hosting
             context.Database.Migrate();
             seeder(context, services);
         }
+
+        public static IWebHost MigrateNeo4jContext<TContext>(this IWebHost webHost, Action<TContext, IServiceProvider> seeder) where TContext : IGraphClientNeo4jFactory
+        {
+            using (var scope = webHost.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+                var logger = services.GetRequiredService<ILogger<TContext>>();
+
+                var context = services.GetService<TContext>();
+
+                try
+                {
+                    logger.LogInformation($"Migrating database associated with context {typeof(TContext).Name}");
+
+
+                    var retry = Policy.Handle<SqlException>()
+                         .WaitAndRetry(new TimeSpan[]
+                         {
+                         TimeSpan.FromSeconds(3),
+                         TimeSpan.FromSeconds(5),
+                         TimeSpan.FromSeconds(8),
+                         });
+
+                    //if the sql server container is not created on run docker compose this
+                    //migration can't fail for network related exception. The retry options for DbContext only 
+                    //apply to transient exceptions
+                    // Note that this is NOT applied when running some orchestrators (let the orchestrator to recreate the failing service)
+                    retry.Execute(() => InvokeSeederNeo4j(seeder, context, services));
+
+
+                    logger.LogInformation($"Migrated database associated with context {typeof(TContext).Name}");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"An error occurred while migrating the database used on context {typeof(TContext).Name}");
+                }
+            }
+            return webHost;
+        }
+
+        private static void InvokeSeederNeo4j<TContext>(Action<TContext, IServiceProvider> seeder, TContext context, IServiceProvider services)
+            where TContext : IGraphClientNeo4jFactory
+        {
+            seeder(context, services);
+        }
+
     }
 }

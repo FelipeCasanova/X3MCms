@@ -14,19 +14,32 @@ namespace Pages.API.Controllers
     [ApiController]
     public class PagesController : ControllerBase
     {
-        private readonly IPageDataService _pageDataService;
+        private readonly IPageService _pageService;
 
-        public PagesController(IPageDataService pageDataService)
+        public PagesController(IPageService pageService)
         {
-            _pageDataService = pageDataService;
+            _pageService = pageService;
         }
 
         // GET api/pages
         [HttpGet]
-        [ProducesResponseType(typeof(List<PageData>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<PageData>>> Get()
+        [ProducesResponseType(typeof(List<Page>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<Page>>> Get()
         {
-            var pages = await _pageDataService.GetAllPagesAsync();
+            var pages = await _pageService.GetAllPagesAsync();
+            if (pages is null)
+            {
+                return Ok();
+            }
+            return pages.ToList();
+        }
+
+        // GET api/pages
+        [HttpGet("populated")]
+        [ProducesResponseType(typeof(List<dynamic>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<dynamic>>> GetPopulated()
+        {
+            var pages = await _pageService.GetAllPagesPopulateAsync();
             if (pages is null)
             {
                 return Ok();
@@ -36,13 +49,42 @@ namespace Pages.API.Controllers
 
         // GET api/pages/{id}
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(List<PageData>), (int)HttpStatusCode.NotFound)]
-        public async Task<ActionResult<PageData>> GetAsync(string id)
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<Page>> GetAsync(string id)
         {
-            var pages = await _pageDataService.GetPageAsync(id);
+            var pages = await _pageService.GetPageAsync(id);
             if (pages is null || !pages.Any())
             {
                 return NotFound();            
+            }
+            return pages.ToList().First();
+        }
+
+        // GET api/pages/populated/{id}
+        [HttpGet("populated/{id}")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<ActionResult<dynamic>> GetPopulatedAsync(string id)
+        {
+            var pages = await _pageService.GetPagePopulateAsync(id);
+            if (pages is null || !pages.Any())
+            {
+                return NotFound();
+            }
+            return pages.ToList().First();
+        }
+
+        // GET api/pages/url/{url}
+        [HttpGet("url/{url}")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<Page>> GetByURLAsync(string url)
+        {
+            var pages = await _pageService.GetPageByURLAsync(url);
+            if (pages is null || !pages.Any())
+            {
+                return NotFound();
             }
             return pages.ToList().First();
         }
@@ -51,53 +93,58 @@ namespace Pages.API.Controllers
         [HttpPost]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Created)]
-        public async Task<ActionResult> PostAsync([FromBody] PageData pageData)
+        public async Task<ActionResult> PostAsync([FromBody] Page page)
         {
-            if (pageData is null)
+            if (page is null)
             {
                 return BadRequest();
             }
 
-            await _pageDataService.CreatePageAsync(pageData);
-            return CreatedAtAction(nameof(GetAsync), new { id = pageData.Id }, null);
+            var result = await _pageService.CreatePageAsync(page);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return CreatedAtAction(nameof(GetAsync), new { id = page.Id }, page);
         }
 
         // PUT api/pages/{id}
         [HttpPut("{id}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(List<PageData>), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Created)]
-        public async Task<ActionResult> PutAsync(string id, [FromBody] PageData pageData)
+        public async Task<ActionResult> PutAsync(string id, [FromBody] Page page)
         {
-            if (pageData is null)
+            if (page is null)
             {
                 return BadRequest();
             }
 
-            var result =  await _pageDataService.UpdatePageAsync(id, pageData);
+            var result =  await _pageService.UpdatePageAsync(id, page);
             if (!result)
             {
                 return NotFound();
             }
-            return CreatedAtAction(nameof(GetAsync), new { id = pageData.Id }, null);
+            return CreatedAtAction(nameof(GetAsync), new { id = page.Id }, page);
         }
 
         // PUT api/pages/{id}/name/{name}
         [HttpPut("{id}/name/{name}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [ProducesResponseType(typeof(List<PageData>), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         public async Task<ActionResult> PutNameAsync(string id, string name)
         {
-            if (name is null)
+            if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(name))
             {
                 return BadRequest();
             }
 
-            var result = await _pageDataService.UpdatePageNameAsync(id, name);
+            var result = await _pageService.UpdatePageNameAsync(id, name);
             if (!result)
             {
                 return NotFound();
@@ -108,10 +155,17 @@ namespace Pages.API.Controllers
         // DELETE api/pages/{id}
         [HttpDelete("{id}")]
         [Authorize]
-        [ProducesResponseType(typeof(List<PageData>), (int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
         public async Task<StatusCodeResult> Delete(string id)
         {
-            var result =  await _pageDataService.DeletePageNameAsync(id);
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequest();
+            }
+
+            var result =  await _pageService.DeletePageAsync(id);
             if (!result)
             {
                 return NotFound();

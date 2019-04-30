@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.ServiceFabric;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -83,20 +85,20 @@ namespace WebStatus
 
         private void RegisterAppInsights(IServiceCollection services)
         {
-            //services.AddApplicationInsightsTelemetry(Configuration);
-            //var orchestratorType = Configuration.GetValue<string>("OrchestratorType");
+            services.AddApplicationInsightsTelemetry(Configuration);
+            var orchestratorType = Configuration.GetValue<string>("OrchestratorType");
 
-            //if (orchestratorType?.ToUpper() == "K8S")
-            //{
-            //    // Enable K8s telemetry initializer
-            //    services.EnableKubernetes();
-            //}
-            //if (orchestratorType?.ToUpper() == "SF")
-            //{
-            //    // Enable SF telemetry initializer
-            //    services.AddSingleton<ITelemetryInitializer>((serviceProvider) =>
-            //        new FabricTelemetryInitializer());
-            //}
+            if (orchestratorType?.ToUpper() == "K8S")
+            {
+                // Enable K8s telemetry initializer
+                services.AddApplicationInsightsKubernetesEnricher();
+            }
+            if (orchestratorType?.ToUpper() == "SF")
+            {
+                // Enable SF telemetry initializer
+                services.AddSingleton<ITelemetryInitializer>((serviceProvider) =>
+                    new FabricTelemetryInitializer());
+            }
         }
     }
 }
