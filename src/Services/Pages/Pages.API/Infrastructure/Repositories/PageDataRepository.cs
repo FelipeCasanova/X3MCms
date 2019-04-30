@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Neo4jClient;
 using Pages.API.Model;
 
 namespace Pages.API.Infrastructure.Repositories
@@ -50,19 +51,29 @@ namespace Pages.API.Infrastructure.Repositories
             }
         }
 
-        public async Task CreatePageAsync(PageData pageData)
+        public async Task CreatePageAsync(PageData pageData = default)
         {
-            if (string.IsNullOrWhiteSpace(pageData.Id))
+            if (string.IsNullOrWhiteSpace(pageData?.Id))
             {
                 pageData.Id = Guid.NewGuid().ToString();
             }
 
             using (var client = _context.Factory.Create())
             {
-                await client.Cypher
-                    .Create("(page:PageData {pageData})")
-                    .WithParam("pageData", pageData)
-                    .ExecuteWithoutResultsAsync();
+                var query = client.Cypher;
+                if (!string.IsNullOrWhiteSpace(pageData?.ParentId))
+                {// Create relationship with parent
+                    query = query.Match("(pageParent:PageData)")
+                        .Where((PageData pageParent) => pageParent.Id == pageData.ParentId)
+                        .CreateUnique("(page:PageData {pageData})-[:CHILD_OF]->(pageParent)")
+                        .CreateUnique("(pageParent)-[:PARENT_OF]->(page)");
+                }
+                else
+                {
+                    query = query.CreateUnique("(page:PageData {pageData})");
+                }
+
+                await query.WithParam("pageData", pageData).ExecuteWithoutResultsAsync();
             }
         }
 
@@ -80,12 +91,36 @@ namespace Pages.API.Infrastructure.Repositories
                 {
                     return false;
                 }
-
+                
                 pageData.Id = pageId;
+
+                if (!string.IsNullOrWhiteSpace(pageData?.ParentId))
+                {
+                    // Delete relationships PARENT_OF and CHILD_OF
+                    await client.Cypher
+                    .OptionalMatch("()-[r1:PARENT_OF]->(page:PageData)")
+                    .Where((PageData page) => page.Id == pageData.Id)
+                    .Delete("r1")
+                    .ExecuteWithoutResultsAsync();
+
+                    await client.Cypher
+                        .OptionalMatch("(page:PageData)-[r2:CHILD_OF]->()")
+                        .Where((PageData page) => page.Id == pageData.Id)
+                        .Delete("r2")
+                        .ExecuteWithoutResultsAsync();
+
+
+                    await client.Cypher.Match("(page:PageData)", "(pageParent:PageData)")
+                        .Where((PageData page) => page.Id == pageData.Id)
+                        .AndWhere((PageData pageParent) => pageParent.Id == pageData.ParentId)
+                        .CreateUnique("(page)-[:CHILD_OF]->(pageParent)")
+                        .CreateUnique("(pageParent)-[:PARENT_OF]->(page)")
+                        .ExecuteWithoutResultsAsync();
+                }
 
                 await client.Cypher
                     .Match("(page:PageData)")
-                    .Where((PageData page) => page.Id == pageId)
+                    .Where((PageData page) => page.Id == pageData.Id)
                     .Set("page = {pageData}")
                     .WithParam("pageData", pageData)
                     .ExecuteWithoutResultsAsync();
@@ -134,6 +169,24 @@ namespace Pages.API.Infrastructure.Repositories
                 {
                     return false;
                 }
+
+                //await client.Cypher
+                //.OptionalMatch("()-[r1]->(page:PageData)-[r2]->()")
+                //.Where((PageData page) => page.Id == pageId)
+                //.Delete("r1, r2, page")
+                //.ExecuteWithoutResultsAsync();
+
+                await client.Cypher
+                    .OptionalMatch("()-[r1:PARENT_OF]->(page:PageData)")
+                    .Where((PageData page) => page.Id == pageId)
+                    .Delete("r1")
+                    .ExecuteWithoutResultsAsync();
+
+                await client.Cypher
+                    .OptionalMatch("(page:PageData)-[r2:CHILD_OF]->()")
+                    .Where((PageData page) => page.Id == pageId)
+                    .Delete("r2")
+                    .ExecuteWithoutResultsAsync();
 
                 await client.Cypher
                     .Match("(page:PageData)")

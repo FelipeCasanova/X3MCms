@@ -37,7 +37,7 @@ namespace Identity.API.Data
             {
                 List<ClientRedirectUri> oldRedirects = (await context.Clients.Include(c => c.RedirectUris).ToListAsync())
                     .SelectMany(c => c.RedirectUris)
-                    .Where(ru => ru.RedirectUri.EndsWith("/o2c.html"))
+                    .Where(ru => ru.RedirectUri.EndsWith("/o2c.html", StringComparison.CurrentCultureIgnoreCase))
                     .ToList();
 
                 if (oldRedirects.Any())
