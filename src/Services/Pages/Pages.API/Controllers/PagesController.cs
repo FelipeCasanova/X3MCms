@@ -72,7 +72,7 @@ namespace Pages.API.Controllers
             {
                 return NotFound();
             }
-            return pages.ToList().First();
+            return pages.ToList();
         }
 
         // GET api/pages/url/{url}

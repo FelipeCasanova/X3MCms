@@ -7,7 +7,23 @@ services:
       - ACCEPT_EULA=Y
     ports:
       - "5433:1433"    # Important: In a production environment your should remove the external port
-
+  
+  nosql.data:
+    ports:
+      - "27017:27017"  # Important: In a production environment your should remove the external port
+  
+  neo4jdb:
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - $HOME/neo4j/neo4j-neo4jdb/conf:/conf
+      - $HOME/neo4j/neo4j-neo4jdb/data:/data
+      - $HOME/neo4j/neo4j-neo4jdb/logs:/logs
+      - $HOME/neo4j/neo4j-neo4jdb/plugins:/plugins
+    environment:
+      - NEO4J_AUTH=${ECMS_NEO4J_USERNAME:-neo4j}/${ECMS_NEO4J_PASSWORD:-password}
+      
   rabbitmq:
     ports:
       - "15672:15672"  # Important: In a production environment your should remove the external port

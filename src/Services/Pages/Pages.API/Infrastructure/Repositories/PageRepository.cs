@@ -230,10 +230,12 @@ namespace Pages.API.Infrastructure.Repositories
             {
                 return await client.Cypher
                     .Match("(p:Page)")
-                    .OptionalMatch("(p:Page)<-[:CHILD_OF*]-(c:Page)")
-                    .Return((p, c) => new {
-                        Parent = p.As<Page>(),
-                        Children = c.CollectAs<Page>()
+                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
+                    .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
+                    .Return((p, c, z) => new {
+                        Parent = p.As<Page>(), 
+                        Zones = z.CollectAsDistinct<Zone>(),
+                        Children = c.CollectAsDistinct<Page>()
                     })
                     .ResultsAsync;
             }
@@ -245,11 +247,23 @@ namespace Pages.API.Infrastructure.Repositories
             {
                 return await client.Cypher
                     .Match("(p:Page)")
-                    .OptionalMatch("(p:Page)<-[:CHILD_OF*]-(c:Page)")
                     .Where((Page p) => p.Id == pageId)
-                    .Return((p, c) => new {
+                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
+                    .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
+                    .Return((p, c, z) => new {
                         Parent = p.As<Page>(),
-                        Children = c.CollectAs<Page>()
+                        Zones = z.CollectAsDistinct<Zone>(),
+                        Children = c.CollectAsDistinct<Page>()
+                    })
+                    .Union()
+                    .Match("(p:Page)")
+                    .Where((Page p) => p.ParentId == pageId)
+                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
+                    .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
+                    .Return((p, c, z) => new {
+                        Parent = p.As<Page>(),
+                        Zones = z.CollectAsDistinct<Zone>(),
+                        Children = c.CollectAsDistinct<Page>()
                     })
                     .ResultsAsync;
             }
