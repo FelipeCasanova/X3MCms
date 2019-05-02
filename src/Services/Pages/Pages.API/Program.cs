@@ -41,6 +41,8 @@ namespace Pages.API
                 .ConfigureLogging((hostingContext, builder) =>
                 {
                     builder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                    builder.AddAzureWebAppDiagnostics();
+                    builder.AddApplicationInsights();
                     builder.AddConsole();
                     builder.AddDebug();
                 })

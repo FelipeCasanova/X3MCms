@@ -1,30 +1,36 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using HealthChecks.UI.Client;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.ServiceFabric;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Neo4jClient;
 using Pages.API.Infrastructure;
 using Pages.API.Infrastructure.Filters;
 using Pages.API.Infrastructure.Middlewares;
 using Pages.API.Infrastructure.Repositories;
 using Pages.API.Infrastructure.Services;
+using RabbitMQ.Client;
 using Swashbuckle.AspNetCore.Swagger;
+using X3MCMS.EventBus;
+using X3MCMS.EventBus.Abstractions;
+using X3MCMS.EventBus.IntegrationEvents.Events;
+using X3MCMS.EventBus.IntegrationEvents.Handlers;
+using X3MCMS.EventBusRabbitMQ;
+using X3MCMS.EventBusServiceBus;
 
 namespace Pages.API
 {
@@ -38,8 +44,10 @@ namespace Pages.API
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            RegisterAppInsights(services);
+
             services
                 .AddCustomHealthCheck(Configuration)
                 .AddMvc(options =>
@@ -52,6 +60,49 @@ namespace Pages.API
             services.Configure<PagesSettings>(Configuration);
 
             ConfigureAuthService(services);
+
+            if (Configuration.GetValue<bool>("AzureServiceBusEnabled"))
+            {
+                services.AddSingleton<IServiceBusPersisterConnection>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<DefaultServiceBusPersisterConnection>>();
+
+                    var serviceBusConnectionString = Configuration["EventBusConnection"];
+                    var serviceBusConnection = new ServiceBusConnectionStringBuilder(serviceBusConnectionString);
+
+                    return new DefaultServiceBusPersisterConnection(serviceBusConnection, logger);
+                });
+            }
+            else
+            {
+                services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
+
+                    var factory = new ConnectionFactory()
+                    {
+                        HostName = Configuration["EventBusConnection"]
+                    };
+
+                    if (!string.IsNullOrEmpty(Configuration["EventBusUserName"]))
+                    {
+                        factory.UserName = Configuration["EventBusUserName"];
+                    }
+
+                    if (!string.IsNullOrEmpty(Configuration["EventBusPassword"]))
+                    {
+                        factory.Password = Configuration["EventBusPassword"];
+                    }
+
+                    var retryCount = 5;
+                    if (!string.IsNullOrEmpty(Configuration["EventBusRetryCount"]))
+                    {
+                        retryCount = int.Parse(Configuration["EventBusRetryCount"]);
+                    }
+
+                    return new DefaultRabbitMQPersistentConnection(factory, logger, retryCount);
+                });
+            }
 
             // Add framework services.
             services.AddSwaggerGen(options =>
@@ -111,6 +162,8 @@ namespace Pages.API
             //configure autofac
             var container = new ContainerBuilder();
             container.Populate(services);
+
+            return new AutofacServiceProvider(container.Build());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -163,6 +216,24 @@ namespace Pages.API
             ConfigureEventBus(app);
         }
 
+        private void RegisterAppInsights(IServiceCollection services)
+        {
+            services.AddApplicationInsightsTelemetry(Configuration);
+            var orchestratorType = Configuration.GetValue<string>("OrchestratorType");
+
+            if (orchestratorType?.ToUpper() == "K8S")
+            {
+                // Enable K8s telemetry initializer
+                services.AddApplicationInsightsKubernetesEnricher();
+            }
+            if (orchestratorType?.ToUpper() == "SF")
+            {
+                // Enable SF telemetry initializer
+                services.AddSingleton<ITelemetryInitializer>((serviceProvider) =>
+                    new FabricTelemetryInitializer());
+            }
+        }
+
         private void ConfigureAuthService(IServiceCollection services)
         {
             // prevent from mapping "sub" claim to nameidentifier.
@@ -183,12 +254,48 @@ namespace Pages.API
 
         private void RegisterEventBus(IServiceCollection services)
         {
+            var subscriptionClientName = Configuration["SubscriptionClientName"];
 
+            if (Configuration.GetValue<bool>("AzureServiceBusEnabled"))
+            {
+                services.AddSingleton<IEventBus, EventBusServiceBus>(sp =>
+                {
+                    var serviceBusPersisterConnection = sp.GetRequiredService<IServiceBusPersisterConnection>();
+                    var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+                    var logger = sp.GetRequiredService<ILogger<EventBusServiceBus>>();
+                    var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+
+                    return new EventBusServiceBus(serviceBusPersisterConnection, logger,
+                        eventBusSubcriptionsManager, subscriptionClientName, iLifetimeScope);
+                });
+            }
+            else
+            {
+                services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
+                {
+                    var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
+                    var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
+                    var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
+                    var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
+
+                    var retryCount = 5;
+                    if (!string.IsNullOrEmpty(Configuration["EventBusRetryCount"]))
+                    {
+                        retryCount = int.Parse(Configuration["EventBusRetryCount"]);
+                    }
+
+                    return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager, subscriptionClientName, retryCount);
+                });
+            }
+
+            services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
+            services.AddTransient<FeatureAddedIntegrationEventHandler>();
         }
 
         private void ConfigureEventBus(IApplicationBuilder app)
         {
-
+            var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
+            eventBus.Subscribe<FeatureAddedIntegrationEvent, FeatureAddedIntegrationEventHandler>();
         }
 
         protected virtual void ConfigureAuth(IApplicationBuilder app)
@@ -218,11 +325,24 @@ namespace Pages.API
                     "pages-neo4j-check",
                     tags: new string[] { "neo4jpagesbd" });
 
-            hcBuilder
+            if (configuration.GetValue<bool>("AzureServiceBusEnabled"))
+            {
+                hcBuilder
+                    .AddAzureServiceBusTopic(
+                        configuration["EventBusConnection"],
+                        topicName: "ecms_event_bus",
+                        name: "pages-servicebus-check",
+                        tags: new string[] { "servicebus" });
+            }
+            else 
+            {
+                hcBuilder
                     .AddRabbitMQ(
                         $"amqp://{configuration["EventBusConnection"]}",
                         name: "pages-rabbitmqbus-check",
                         tags: new string[] { "rabbitmqbus" });
+            }
+
 
             return services;
         }

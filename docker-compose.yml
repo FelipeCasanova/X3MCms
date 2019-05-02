@@ -6,9 +6,6 @@ services:
 
   nosql.data:
     image: mongo:4.0
-  
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
     
   neo4jdb:
     image: neo4j:3.5
