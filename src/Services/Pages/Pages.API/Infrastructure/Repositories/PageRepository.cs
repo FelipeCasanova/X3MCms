@@ -16,6 +16,18 @@ namespace Pages.API.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<IEnumerable<Page>> GetRootAsync()
+        {
+            using (var client = _context.Factory.Create())
+            {
+                return await client.Cypher
+                  .Match("(p:Page)")
+                  .Where((Page p) => p.ParentId == String.Empty)
+                  .Return(p => p.As<Page>())
+                  .ResultsAsync;
+            }
+        }
+
         public async Task<IEnumerable<Page>> GetAllPagesAsync()
         {
             using (var client = _context.Factory.Create())
@@ -172,12 +184,6 @@ namespace Pages.API.Infrastructure.Repositories
                     return false;
                 }
 
-                //await client.Cypher
-                //.OptionalMatch("()-[r1]->(page:Page)-[r2]->()")
-                //.Where((Page page) => page.Id == pageId)
-                //.Delete("r1, r2, page")
-                //.ExecuteWithoutResultsAsync();
-
                 await client.Cypher
                     .OptionalMatch("(p:Page)-[r:HAS_ZONE]->()")
                     .Where((Page p) => p.Id == pageId)
@@ -262,6 +268,64 @@ namespace Pages.API.Infrastructure.Repositories
                     .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
                     .Return((p, c, z) => new {
                         Parent = p.As<Page>(),
+                        Zones = z.CollectAsDistinct<Zone>(),
+                        Children = c.CollectAsDistinct<Page>()
+                    })
+                    .ResultsAsync;
+            }
+        }
+
+        public async Task<IEnumerable<dynamic>> GetPagePopulateByURLAsync(string url)
+        {
+            using (var client = _context.Factory.Create())
+            {
+                return await client.Cypher
+                    .Match("(p:Page)")
+                    .Where((Page p) => p.URL == url)
+                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
+                    .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
+                    .Return((p, c, z) => new {
+                        Parent = p.As<Page>(),
+                        Zones = z.CollectAsDistinct<Zone>(),
+                        Children = c.CollectAsDistinct<Page>()
+                    })
+                    .Union()
+                    .Match("(p:Page)")
+                    .Where((Page p) => p.URL == url)
+                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(p2:Page)")
+                    .OptionalMatch("(p2:Page)-[:PARENT_OF]->(c:Page)")
+                    .OptionalMatch("(p2)-[:HAS_ZONE]->(z)")
+                    .Return((p2, c, z) => new {
+                        Parent = p2.As<Page>(),
+                        Zones = z.CollectAsDistinct<Zone>(),
+                        Children = c.CollectAsDistinct<Page>()
+                    })
+                    .ResultsAsync;
+            }
+        }
+
+        public async Task<IEnumerable<dynamic>> GetRootPopulateAsync()
+        {
+            using (var client = _context.Factory.Create())
+            {
+                return await client.Cypher
+                    .Match("(p:Page)")
+                    .Where((Page p) => p.ParentId == String.Empty)
+                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
+                    .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
+                    .Return((p, c, z) => new {
+                        Parent = p.As<Page>(),
+                        Zones = z.CollectAsDistinct<Zone>(),
+                        Children = c.CollectAsDistinct<Page>()
+                    })
+                    .Union()
+                    .Match("(p:Page)")
+                    .Where((Page p) => p.ParentId == String.Empty)
+                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(p2:Page)")
+                    .OptionalMatch("(p2:Page)-[:PARENT_OF]->(c:Page)")
+                    .OptionalMatch("(p2)-[:HAS_ZONE]->(z)")
+                    .Return((p2, c, z) => new {
+                        Parent = p2.As<Page>(),
                         Zones = z.CollectAsDistinct<Zone>(),
                         Children = c.CollectAsDistinct<Page>()
                     })

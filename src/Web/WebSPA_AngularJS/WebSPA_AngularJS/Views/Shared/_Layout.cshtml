@@ -1,0 +1,13 @@
+﻿<!DOCTYPE html>
+<html ng-app="pagesApp">
+<head>
+    <title>@ViewBag.Title</title>
+    <meta charset="utf-8" />
+    @RenderSection("CSSSection", false)
+</head>
+<body ng-controller="PagesCtrl">
+    <div id="ErrorPlaceHolder"></div>
+    @RenderBody()
+    @RenderSection("JSSection", false)
+</body>
+</html>

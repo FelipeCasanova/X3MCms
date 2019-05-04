@@ -40,6 +40,31 @@ namespace Pages.API.Infrastructure.Services
             return await _pageRepository.GetPageByURLAsync(url);
         }
 
+        public async Task<IEnumerable<Page>> GetRootAsync()
+        {
+            return await _pageRepository.GetRootAsync();
+        }
+
+        public async Task<IEnumerable<dynamic>> GetAllPagesPopulateAsync()
+        {
+            return await _pageRepository.GetAllPagesPopulateAsync();
+        }
+
+        public async Task<IEnumerable<dynamic>> GetPagePopulateAsync(string pageId)
+        {
+            return await _pageRepository.GetPagePopulateAsync(pageId);
+        }
+
+        public async Task<IEnumerable<dynamic>> GetPagePopulateByURLAsync(string url)
+        {
+            return await _pageRepository.GetPagePopulateByURLAsync(url);
+        }
+
+        public async Task<IEnumerable<dynamic>> GetRootPopulateAsync()
+        {
+            return await _pageRepository.GetRootPopulateAsync();
+        }
+
         public async Task<Boolean> UpdatePageAsync(string pageId, Page page)
         {
             if (!(await PreConditionParentMustExist(page)))
@@ -67,16 +92,6 @@ namespace Pages.API.Infrastructure.Services
                 return parents != null && parents.Any();
             }
             return true;
-        }
-
-        public async Task<IEnumerable<dynamic>> GetAllPagesPopulateAsync()
-        {
-            return await _pageRepository.GetAllPagesPopulateAsync();
-        }
-
-        public async Task<IEnumerable<dynamic>> GetPagePopulateAsync(string pageId)
-        {
-            return await _pageRepository.GetPagePopulateAsync(pageId);
         }
     }
 }

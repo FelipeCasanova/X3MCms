@@ -86,14 +86,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 var logger = services.GetRequiredService<ILogger<TContext>>();
 
-                var context = services.GetService<TContext>();
-
-                try
-                {
-                    logger.LogInformation($"Migrating database associated with context {typeof(TContext).Name}");
-
-
-                    var retry = Policy.Handle<SqlException>()
+                var retry = Policy.Handle<SqlException>()
                          .WaitAndRetry(new TimeSpan[]
                          {
                          TimeSpan.FromSeconds(3),
@@ -101,12 +94,15 @@ namespace Microsoft.AspNetCore.Hosting
                          TimeSpan.FromSeconds(8),
                          });
 
+                try
+                {
+                    logger.LogInformation($"Migrating database associated with context {typeof(TContext).Name}");
+
                     //if the sql server container is not created on run docker compose this
                     //migration can't fail for network related exception. The retry options for DbContext only 
                     //apply to transient exceptions
                     // Note that this is NOT applied when running some orchestrators (let the orchestrator to recreate the failing service)
-                    retry.Execute(() => InvokeSeederNeo4j(seeder, context, services));
-
+                    retry.Execute(() => InvokeSeederNeo4j(seeder, services));
 
                     logger.LogInformation($"Migrated database associated with context {typeof(TContext).Name}");
                 }
@@ -118,9 +114,10 @@ namespace Microsoft.AspNetCore.Hosting
             return webHost;
         }
 
-        private static void InvokeSeederNeo4j<TContext>(Action<TContext, IServiceProvider> seeder, TContext context, IServiceProvider services)
+        private static void InvokeSeederNeo4j<TContext>(Action<TContext, IServiceProvider> seeder, IServiceProvider services)
             where TContext : IGraphClientNeo4jFactory
         {
+            var context = services.GetService<TContext>();
             seeder(context, services);
         }
 

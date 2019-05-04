@@ -40,3 +40,10 @@ services:
       - neo4jdb
       - rabbitmq
       - pages.api
+      
+  webspa_angularjs:
+    image: ${REGISTRY:-ecms}/webspaangularjs:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: src/Web/WebSPA_AngularJS/Dockerfile
+  

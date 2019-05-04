@@ -75,6 +75,34 @@ namespace Pages.API.Controllers
             return pages.ToList();
         }
 
+        // GET api/pages/root
+        [HttpGet("root")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<Page>> GetRootAsync(string id)
+        {
+            var pages = await _pageService.GetRootAsync();
+            if (pages is null || !pages.Any())
+            {
+                return NotFound();
+            }
+            return pages.ToList().First();
+        }
+
+        // GET api/pages/populated/root
+        [HttpGet("populated/root")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        public async Task<ActionResult<dynamic>> GetPopulatedRootAsync(string id)
+        {
+            var pages = await _pageService.GetRootPopulateAsync();
+            if (pages is null || !pages.Any())
+            {
+                return NotFound();
+            }
+            return pages.ToList();
+        }
+
         // GET api/pages/url/{url}
         [HttpGet("url/{url}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -87,6 +115,20 @@ namespace Pages.API.Controllers
                 return NotFound();
             }
             return pages.ToList().First();
+        }
+
+        // GET api/pages/populated/url/{url}
+        [HttpGet("populated/url/{url}")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<dynamic>> GetPopulatedByURLAsync(string url)
+        {
+            var pages = await _pageService.GetPagePopulateByURLAsync(url);
+            if (pages is null || !pages.Any())
+            {
+                return NotFound();
+            }
+            return pages.ToList();
         }
 
         // POST api/pages

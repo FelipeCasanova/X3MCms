@@ -40,6 +40,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBusServiceBus", "src\B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBusRabbitMQ", "src\BuildingBlocks\EventBus\EventBusRabbitMQ\EventBusRabbitMQ.csproj", "{1EF40339-242B-4303-8FF5-618CC187F912}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSPA_AngularJS", "WebSPA_AngularJS", "{1347C3A2-501E-4961-92D8-4ED0E027FAB9}"
+	ProjectSection(SolutionItems) = preProject
+		src\Web\WebSPA_AngularJS\Dockerfile = src\Web\WebSPA_AngularJS\Dockerfile
+		src\Web\WebSPA_AngularJS\start-nginx.sh = src\Web\WebSPA_AngularJS\start-nginx.sh
+		src\Web\WebSPA_AngularJS\init.sh = src\Web\WebSPA_AngularJS\init.sh
+		src\Web\WebSPA_AngularJS\index.html = src\Web\WebSPA_AngularJS\index.html
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSPA_AngularJS", "src\Web\WebSPA_AngularJS\WebSPA_AngularJS\WebSPA_AngularJS.csproj", "{CE483A84-515F-47DD-8CAB-290AF7F31547}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config", "config", "{2BBBE8F1-04A5-4D41-836A-F36D8D23655D}"
+	ProjectSection(SolutionItems) = preProject
+		src\Web\WebSPA_AngularJS\config\default = src\Web\WebSPA_AngularJS\config\default
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +93,10 @@ Global
 		{1EF40339-242B-4303-8FF5-618CC187F912}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EF40339-242B-4303-8FF5-618CC187F912}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EF40339-242B-4303-8FF5-618CC187F912}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE483A84-515F-47DD-8CAB-290AF7F31547}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE483A84-515F-47DD-8CAB-290AF7F31547}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE483A84-515F-47DD-8CAB-290AF7F31547}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE483A84-515F-47DD-8CAB-290AF7F31547}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7466E150-5B5F-4E08-82D6-3C75BED8D9E0} = {B0FB26CF-BD95-4A37-9105-7AD4E6CB69CF}
@@ -95,5 +114,8 @@ Global
 		{D8AB70B8-FD25-4DD3-8203-863B70794F8B} = {E923F64C-6C0E-4B07-B6EB-5B23E4D5776F}
 		{BBEE5260-623B-40C8-879F-FEB7957A341C} = {E923F64C-6C0E-4B07-B6EB-5B23E4D5776F}
 		{1EF40339-242B-4303-8FF5-618CC187F912} = {E923F64C-6C0E-4B07-B6EB-5B23E4D5776F}
+		{1347C3A2-501E-4961-92D8-4ED0E027FAB9} = {A8DBB3C7-1C24-4A13-9312-B41672AC04F8}
+		{CE483A84-515F-47DD-8CAB-290AF7F31547} = {1347C3A2-501E-4961-92D8-4ED0E027FAB9}
+		{2BBBE8F1-04A5-4D41-836A-F36D8D23655D} = {1347C3A2-501E-4961-92D8-4ED0E027FAB9}
 	EndGlobalSection
 EndGlobal

@@ -29,5 +29,10 @@
   <ItemGroup>
     <None Remove="healthchecksdb" />
     <None Remove="healthchecksdb" />
+    <None Remove="healthchecksdb" />
+    <None Remove="healthchecksdb" />
+    <None Remove="healthchecksdb" />
+    <None Remove="healthchecksdb" />
+    <None Remove="healthchecksdb" />
   </ItemGroup>
 </Project>
