@@ -15,6 +15,7 @@ namespace Pages.API.Infrastructure.Repositories
         Task<IEnumerable<dynamic>> GetRootPopulateAsync();
         Task<IEnumerable<Page>> GetPageByURLAsync(string url);
         Task<IEnumerable<dynamic>> GetPagePopulateByURLAsync(string url);
+        Task<IEnumerable<Page>> GetPageBreadCrumbToTheRootAsync(string url);
         Task<Boolean> CreatePageAsync(Page page = default);
         Task<Boolean> UpdatePageAsync(string pageId, Page page);
         Task<Boolean> UpdatePageNameAsync(string pageId, string name);

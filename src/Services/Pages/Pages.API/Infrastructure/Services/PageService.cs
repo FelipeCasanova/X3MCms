@@ -93,5 +93,10 @@ namespace Pages.API.Infrastructure.Services
             }
             return true;
         }
+
+        public async Task<IEnumerable<Page>> GetPageBreadCrumbToTheRootAsync(string url)
+        {
+            return await _pageRepository.GetPageBreadCrumbToTheRootAsync(url);
+        }
     }
 }

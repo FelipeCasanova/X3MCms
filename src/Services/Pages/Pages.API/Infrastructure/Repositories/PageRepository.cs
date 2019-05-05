@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Neo4jClient;
+using Neo4jClient.Cypher;
 using Pages.API.Model;
 
 namespace Pages.API.Infrastructure.Repositories
@@ -262,9 +263,8 @@ namespace Pages.API.Infrastructure.Repositories
                         Children = c.CollectAsDistinct<Page>()
                     })
                     .Union()
-                    .Match("(p:Page)")
+                    .Match("(p:Page)-[:PARENT_OF*1]->(c:Page)")
                     .Where((Page p) => p.ParentId == pageId)
-                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
                     .Return((p, c, z) => new {
                         Parent = p.As<Page>(),
@@ -290,9 +290,8 @@ namespace Pages.API.Infrastructure.Repositories
                         Children = c.CollectAsDistinct<Page>()
                     })
                     .Union()
-                    .Match("(p:Page)")
+                    .Match("(p:Page)-[:PARENT_OF*1]->(p2:Page)")
                     .Where((Page p) => p.URL == url)
-                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(p2:Page)")
                     .OptionalMatch("(p2:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p2)-[:HAS_ZONE]->(z)")
                     .Return((p2, c, z) => new {
@@ -319,9 +318,8 @@ namespace Pages.API.Infrastructure.Repositories
                         Children = c.CollectAsDistinct<Page>()
                     })
                     .Union()
-                    .Match("(p:Page)")
+                    .Match("(p:Page)-[:PARENT_OF*1]->(p2:Page)")
                     .Where((Page p) => p.ParentId == String.Empty)
-                    .OptionalMatch("(p:Page)-[:PARENT_OF]->(p2:Page)")
                     .OptionalMatch("(p2:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p2)-[:HAS_ZONE]->(z)")
                     .Return((p2, c, z) => new {
@@ -330,6 +328,21 @@ namespace Pages.API.Infrastructure.Repositories
                         Children = c.CollectAsDistinct<Page>()
                     })
                     .ResultsAsync;
+            }
+        }
+
+        public async Task<IEnumerable<Page>> GetPageBreadCrumbToTheRootAsync(string url)
+        {
+            using (var client = _context.Factory.Create())
+            {
+                var paths = await client.Cypher
+                    .Match("p = (currentPage:Page)<-[:PARENT_OF*0..]-()")
+                    .Where((Page currentPage) => currentPage.URL == url)
+                    .Return((p) => Return.As<IEnumerable<Page>>("nodes(p)"))
+                    .OrderByDescending("length(p)")
+                    .Limit(1)
+                    .ResultsAsync;
+                return paths.SingleOrDefault();
             }
         }
     }

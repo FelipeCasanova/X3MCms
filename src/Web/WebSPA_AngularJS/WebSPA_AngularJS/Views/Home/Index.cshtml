@@ -2,24 +2,128 @@
     <link rel="stylesheet" href="/Content/bootstrap.css" />
 }
 @section JSSection {
-    <script src="/Scripts/jquery-1.9.1.js"></script>
+    <script src="/Scripts/jquery-3.0.0.js"></script>
     <script src="/Scripts/jquery.validate.js"></script>
     <script src="/Scripts/jquery.validate.unobtrusive.js"></script>
     <script src="/Scripts/bootstrap.js"></script>
     <script src="/Scripts/bootstrap/bootstrap-validation.js"></script>
     <script src="/Scripts/angular.js"></script>
     <script src="/Scripts/angular-route.js"></script>
+    <script src="/Scripts/angular-animate.js"></script>
     <script src="/Scripts/Pages/main.js"></script>
 }
-<h2>Welcome to ASP.NET MVC @ViewData["Version"] on @ViewData["Runtime"]!</h2>
-<div class="list-group">
-    <a ng-href="~/" class="list-group-item list-group-item-action active">
-        {{ rootPage.name }}
-    </a>
-    <a ng-href="{{currentPage.url}}" class="list-group-item list-group-item-action active" ng-if="currentPage.id != rootPage.id">
-        {{ currentPage.name }}
-    </a>
-    <a ng-href="{{child.url}}" class="list-group-item list-group-item-action active" ng-repeat="child in rootPagePopulated.children">
-        {{ child.name }}
-    </a>
+<div class="container ng-cloak">
+    <div class="row">
+        <div class="col-xs-12">
+            <h2>Welcome to ASP.NET MVC @ViewData["Version"] on @ViewData["Runtime"]!</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active" aria-current="page" ng-if="rootPage.id == currentPage.id">{{ rootPage.name }}</li>
+                    <li class="breadcrumb-item"
+                        ng-class="{active: page.id == currentPage.id}"
+                        ng-prop-aria-current="{page: page.id == currentPage.id}"
+                        ng-repeat="page in breadCrumb">
+                        <a ng-href="/{{ page.parentId != '' ? page.url : ''}}" ng-if="page.id != currentPage.id">{{ page.name }}</a>
+                        <span ng-if="page.id == currentPage.id">{{ page.name }}</span>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-md-4">
+            <div class="list-group">
+                <a ng-href="~/" class="list-group-item list-group-item-action" ng-class="{active: rootPage.id == currentPage.id}">
+                    {{ rootPage.name }}
+                </a>
+                <a ng-href="/{{currentPage.url}}" class="list-group-item list-group-item-action active" ng-if="currentPage.id != rootPage.id">
+                    {{ currentPage.name }}
+                </a>
+                <a ng-href="/{{child.url}}" class="list-group-item list-group-item-action" ng-repeat="child in currentPagePopulated.children">
+                    {{ child.name }}
+                </a>
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-8">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Zone Name</th>
+                        <th scope="col">Zone Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="zone in currentPagePopulated.zones">
+                        <th scope="row">{{ $index }}</th>
+                        <td>{{zone.name}}</td>
+                        <td>{{zone.type}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-xs-12 offset-md-4 col-md-8">
+            <form name="formAddPage">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Page Name</th>
+                            <th scope="col">Page URL</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="page-item" ng-repeat="child in currentPagePopulated.children">
+                            <th scope="row">{{ $index }}</th>
+                            <td>{{child.name}}</td>
+                            <td>{{child.url}}</td>
+                            <td><button type="button" class="btn btn-warning btn-sm" ng-click="deletePage(child)">Delete</button></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">{{ $index }}</th>
+                            <td>
+                                <div class="form-group">
+                                    <input type="text" name="name" ng-model="newPage.name" class="form-control" placeholder="Name..."
+                                           required ng-trim="true"
+                                           ng-class="{'is-invalid': formAddPage.name.$error.required}">
+                                    <div class="invalid-feedback">
+                                        <span ng-show="formAddPage.name.$error.required">
+                                            Required!
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+
+                                <div class="form-group">
+                                    <input type="text" name="url" ng-model="newPage.url" class="form-control" placeholder="URL..."
+                                           ng-pattern="patterURL.word" required ng-trim="true"
+                                           ng-class="{'is-invalid': formAddPage.url.$error.required || formAddPage.url.$error.pattern}">
+                                    <div class="invalid-feedback">
+                                        <span ng-show="formAddPage.url.$error.required">
+                                            Required!
+                                        </span>
+                                        <span ng-show="formAddPage.url.$error.pattern">
+                                            Single word only!
+                                        </span>
+                                    </div>
+                                </div>
+
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-primary btn-sm form-control" ng-click="addNewPage()" ng-disabled="!formAddPage.$valid">Add</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
 </div>

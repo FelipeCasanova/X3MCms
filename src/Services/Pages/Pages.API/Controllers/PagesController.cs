@@ -131,6 +131,21 @@ namespace Pages.API.Controllers
             return pages.ToList();
         }
 
+        // GET api/pages/breadcrumb/url/{url}
+        [HttpGet("breadcrumb/url/{url}")]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<Page>>> GetBreadCrumbToTheRootByURLAsync(string url)
+        {
+            var pages = await _pageService.GetPageBreadCrumbToTheRootAsync(url);
+            if (pages is null || !pages.Any())
+            {
+                return NotFound();
+            }
+            return pages.ToList();
+        }
+
+
         // POST api/pages
         [HttpPost]
         [Authorize]
