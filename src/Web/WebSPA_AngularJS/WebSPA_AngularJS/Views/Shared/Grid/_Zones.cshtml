@@ -1,0 +1,81 @@
+﻿<form name="formZone" ng-controller="ZonesCtrl">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Zone Name</th>
+                <th scope="col">Zone Type</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="zone-item" ng-repeat="zone in currentPagePopulated.zones">
+                <th scope="row">{{ $index }}</th>
+                <td ng-if="!zone.isEditing">{{zone.name}}</td>
+                <td ng-if="zone.isEditing">
+                    <div class="form-group">
+                        <input type="text" name="name{{ $index }}" ng-model="zone.name" class="form-control" placeholder="Name..."
+                               required ng-trim="true"
+                               ng-class="{'is-invalid': formZone.name{{ $index }}.$error.required }">
+                        <div class="invalid-feedback">
+                            <span ng-show="formZone.name{{ $index }}.$error.required">
+                                Required!
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td ng-if="!zone.isEditing">{{zone.type}}</td>
+                <td ng-if="zone.isEditing">
+                    <div class="form-group">
+                        <input type="text" name="type{{ $index }}" ng-model="zone.type" class="form-control" placeholder="Type..."
+                               required ng-trim="true"
+                               ng-class="{'is-invalid': formZone.type{{ $index }}.$error.required }">
+                        <div class="invalid-feedback">
+                            <span ng-show="formZone.type{{ $index }}.$error.required">
+                                Required!
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(zone, true)" ng-show="!zone.isEditing">Edit</button>
+                    <button type="button" class="btn btn-warning btn-sm" ng-click="deleteZone(zone, $index)" ng-show="!zone.isEditing">Delete</button>
+                    <button type="button" class="btn btn-warning btn-sm" ng-click="updateZone(zone, true)" ng-show="zone.isEditing">Update</button>
+                    <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(zone, false)" ng-show="zone.isEditing">Cancel</button>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">{{ $index }}</th>
+                <td>
+                    <div class="form-group">
+                        <input type="text" name="name" ng-model="newZone.name" class="form-control" placeholder="Name..."
+                               required ng-trim="true"
+                               ng-class="{'is-invalid': formZone.name.$error.required}">
+                        <div class="invalid-feedback">
+                            <span ng-show="formZone.name.$error.required">
+                                Required!
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" name="type" ng-model="newZone.type" class="form-control" placeholder="Type..."
+                               required ng-trim="true"
+                               ng-class="{'is-invalid': formZone.type.$error.required }">
+                        <div class="invalid-feedback">
+                            <span ng-show="formZone.type.$error.required">
+                                Required!
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary btn-sm form-control" ng-click="addZone()" ng-disabled="!formZone.$valid">Add</button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>

@@ -1,0 +1,88 @@
+﻿<form name="formPage" ng-controller="PagesCtrl">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Page Name</th>
+                <th scope="col">Page URL</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="page-item" ng-repeat="child in currentPagePopulated.children">
+                <th scope="row">{{ $index }}</th>
+                <td ng-if="!child.isEditing">{{child.name}}</td>
+                <td ng-if="child.isEditing">
+                    <div class="form-group">
+                        <input type="text" name="name{{ $index }}" ng-model="child.name" class="form-control" placeholder="Name..."
+                               required ng-trim="true"
+                               ng-class="{'is-invalid': formPage.name{{ $index }}.$error.required}">
+                        <div class="invalid-feedback">
+                            <span ng-show="formPage.name{{ $index }}.$error.required">
+                                Required!
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td ng-if="!child.isEditing">{{child.url}}</td>
+                <td ng-if="child.isEditing">
+                    <div class="form-group">
+                        <input type="text" name="url{{ $index }}" ng-model="child.url" class="form-control" placeholder="URL..."
+                               ng-pattern="patterURL.word" required ng-trim="true"
+                               ng-class="{'is-invalid': formPage.url{{ $index }}.$error.required || formPage.url{{ $index }}.$error.pattern}">
+                        <div class="invalid-feedback">
+                            <span ng-show="formPage.url{{ $index }}.$error.required">
+                                Required!
+                            </span>
+                            <span ng-show="formPage.url{{ $index }}.$error.pattern">
+                                Single word only!
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(child, true)" ng-show="!child.isEditing">Edit</button>
+                    <button type="button" class="btn btn-warning btn-sm" ng-click="deletePage(child, $index)" ng-show="!child.isEditing">Delete</button>
+                    <button type="button" class="btn btn-warning btn-sm" ng-click="updatePage(child, true)" ng-show="child.isEditing">Update</button>
+                    <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(child, false)" ng-show="child.isEditing">Cancel</button>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">{{ $index }}</th>
+                <td>
+                    <div class="form-group">
+                        <input type="text" name="name" ng-model="newPage.name" class="form-control" placeholder="Name..."
+                               required ng-trim="true"
+                               ng-class="{'is-invalid': formPage.name.$error.required}">
+                        <div class="invalid-feedback">
+                            <span ng-show="formPage.name.$error.required">
+                                Required!
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="form-group">
+                        <input type="text" name="url" ng-model="newPage.url" class="form-control" placeholder="URL..."
+                               ng-pattern="patterURL.word" required ng-trim="true"
+                               ng-class="{'is-invalid': formPage.url.$error.required || formPage.url.$error.pattern}">
+                        <div class="invalid-feedback">
+                            <span ng-show="formPage.url.$error.required">
+                                Required!
+                            </span>
+                            <span ng-show="formPage.url.$error.pattern">
+                                Single word only!
+                            </span>
+                        </div>
+                    </div>
+
+                </td>
+                <td>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary btn-sm form-control" ng-click="addPage()" ng-disabled="!formPage.$valid">Add</button>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>

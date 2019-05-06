@@ -1,0 +1,12 @@
+﻿<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page" ng-if="rootPage.id == currentPage.id">{{ rootPage.name }}</li>
+        <li class="breadcrumb-item"
+            ng-class="{active: page.id == currentPage.id}"
+            ng-prop-aria-current="{page: page.id == currentPage.id}"
+            ng-repeat="page in breadCrumb">
+            <a ng-href="/{{ page.parentId != '' ? page.url : ''}}" ng-if="page.id != currentPage.id">{{ page.name }}</a>
+            <span ng-if="page.id == currentPage.id">{{ page.name }}</span>
+        </li>
+    </ol>
+</nav>
