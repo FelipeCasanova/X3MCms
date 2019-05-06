@@ -31,6 +31,24 @@ namespace Identity.API.Configuration
         {
             return new List<Client>
             {
+                // JavaScript Client
+                new Client
+                {
+                    ClientId = "js",
+                    ClientName = "eCMS SPA OpenId Client",
+                    AllowedGrantTypes = GrantTypes.Implicit,
+                    AllowAccessTokensViaBrowser = true,
+                    RedirectUris =           { $"{clientsUrl["Spa"]}/" },
+                    RequireConsent = false,
+                    PostLogoutRedirectUris = { $"{clientsUrl["Spa"]}/" },
+                    AllowedCorsOrigins =     { $"{clientsUrl["Spa"]}" },
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "pages"
+                    },
+                },
                 new Client
                 {
                     ClientId = "pagesswaggerui",

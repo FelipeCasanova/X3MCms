@@ -34,6 +34,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://0.0.0.0:80
       - ConnectionString=${ECMS_AZURE_IDENTITY_DB:-Server=sql.data;Database=Microsoft.eCMSContainers.Services.IdentityDb;User Id=sa;Password=Pass@word} 
+      - SpaClient=http://${ECMS_EXTERNAL_DNS_NAME_OR_IP:-localhost}:5104
+      - MvcClient=http://${ECMS_EXTERNAL_DNS_NAME_OR_IP:-localhost}:5100
       - PagesApiClient=http://${ECMS_EXTERNAL_DNS_NAME_OR_IP:-localhost}:5010
       - UseCustomizationData=True  
       - ApplicationInsights__InstrumentationKey=${INSTRUMENTATION_KEY:-none}

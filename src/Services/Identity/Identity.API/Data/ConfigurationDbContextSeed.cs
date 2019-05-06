@@ -19,6 +19,8 @@ namespace Identity.API.Data
             //callbacks urls from config:
             var clientUrls = new Dictionary<string, string>();
 
+            clientUrls.Add("Spa", configuration.GetValue<string>("SpaClient"));
+            clientUrls.Add("Mvc", configuration.GetValue<string>("MvcClient"));
             clientUrls.Add("PagesApi", configuration.GetValue<string>("PagesApiClient"));
 
             if (!context.Clients.Any())
