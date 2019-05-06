@@ -41,10 +41,14 @@
                     </div>
                 </td>
                 <td>
-                    <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(child, true)" ng-show="!child.isEditing">Edit</button>
-                    <button type="button" class="btn btn-warning btn-sm" ng-click="deletePage(child, $index)" ng-show="!child.isEditing">Delete</button>
-                    <button type="button" class="btn btn-warning btn-sm" ng-click="updatePage(child, true)" ng-show="child.isEditing">Update</button>
-                    <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(child, false)" ng-show="child.isEditing">Cancel</button>
+                    <div ng-show="!child.isEditing">
+                        <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(child, true)">Edit</button>
+                        <button type="button" class="btn btn-warning btn-sm" ng-click="deletePage(child, $index)">Delete</button>
+                    </div>
+                    <div ng-show="child.isEditing">
+                        <button type="button" class="btn btn-warning btn-sm" ng-click="updatePage(child, true)">Update</button>
+                        <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(child, false)">Cancel</button>
+                    </div>
                 </td>
             </tr>
             <tr>

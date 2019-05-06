@@ -1,4 +1,8 @@
-﻿function handleOk(message)
+﻿function bootstrapValidation() {
+    // Function to add additional validatation for bootstrap 4 if needed
+}
+
+function handleOk(message)
 {
     handleMessage(message, "success");
 }

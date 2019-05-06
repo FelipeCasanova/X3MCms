@@ -910,6 +910,8 @@
     <Content Include="Scripts\Pages\Controllers\zonesCtrl.js" />
     <Content Include="Scripts\Pages\Controllers\appCtrl.js" />
     <Content Include="Scripts\Bootstrap\additional-validation.js" />
+    <Content Include="Content\site.css" />
+    <Content Include="Views\Shared\Tokens\_MenuListGroup.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\version.json" />

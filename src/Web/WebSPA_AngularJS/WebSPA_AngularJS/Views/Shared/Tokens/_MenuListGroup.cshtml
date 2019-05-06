@@ -1,0 +1,11 @@
+﻿<div class="list-group">
+    <a ng-href="~/" class="list-group-item list-group-item-action" ng-class="{active: rootPage.id == currentPage.id}">
+        {{ rootPage.name }}
+    </a>
+    <a ng-href="/{{currentPage.url}}" class="list-group-item list-group-item-action active" ng-if="currentPage.id != rootPage.id">
+        {{ currentPage.name }}
+    </a>
+    <a ng-href="/{{child.url}}" class="list-group-item list-group-item-action" ng-repeat="child in currentPagePopulated.children">
+        {{ child.name }}
+    </a>
+</div>

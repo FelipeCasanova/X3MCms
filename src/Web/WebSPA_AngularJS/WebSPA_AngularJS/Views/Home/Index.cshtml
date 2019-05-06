@@ -1,5 +1,6 @@
 ﻿@section CSSSection {
     <link rel="stylesheet" href="/Content/bootstrap.css" />
+    <link rel="stylesheet" href="/Content/site.css" />
 }
 @section JSSection {
     <script src="/Scripts/jquery-3.4.1.js"></script>
@@ -21,7 +22,7 @@
     <script src="/Scripts/Services/zones.js"></script>
     <script src="/Scripts/Services/features.js"></script>
 }
-<div class="container ng-cloak">
+<div class="container">
     <div class="row">
         <div id="ErrorPlaceHolder" class="col-xs-12 col-md-12"></div>
         <div class="col-xs-12 col-md-12">
@@ -41,17 +42,7 @@
     </div>
     <div class="row">
         <div class="col-xs-12 col-md-4">
-            <div class="list-group">
-                <a ng-href="~/" class="list-group-item list-group-item-action" ng-class="{active: rootPage.id == currentPage.id}">
-                    {{ rootPage.name }}
-                </a>
-                <a ng-href="/{{currentPage.url}}" class="list-group-item list-group-item-action active" ng-if="currentPage.id != rootPage.id">
-                    {{ currentPage.name }}
-                </a>
-                <a ng-href="/{{child.url}}" class="list-group-item list-group-item-action" ng-repeat="child in currentPagePopulated.children">
-                    {{ child.name }}
-                </a>
-            </div>
+            @Html.Partial("Tokens/_MenuListGroup")
         </div>
         <div class="col-xs-12 col-md-8">
             @Html.Partial("Grid/_Zones")

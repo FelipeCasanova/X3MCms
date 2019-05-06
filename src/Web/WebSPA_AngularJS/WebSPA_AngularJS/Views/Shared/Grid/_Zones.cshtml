@@ -38,10 +38,14 @@
                     </div>
                 </td>
                 <td>
-                    <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(zone, true)" ng-show="!zone.isEditing">Edit</button>
-                    <button type="button" class="btn btn-warning btn-sm" ng-click="deleteZone(zone, $index)" ng-show="!zone.isEditing">Delete</button>
-                    <button type="button" class="btn btn-warning btn-sm" ng-click="updateZone(zone, true)" ng-show="zone.isEditing">Update</button>
-                    <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(zone, false)" ng-show="zone.isEditing">Cancel</button>
+                    <div ng-show="!zone.isEditing">
+                        <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(zone, true)">Edit</button>
+                        <button type="button" class="btn btn-warning btn-sm" ng-click="deleteZone(zone, $index)">Delete</button>
+                    </div>
+                    <div ng-show="zone.isEditing">
+                        <button type="button" class="btn btn-warning btn-sm" ng-click="updateZone(zone, true)">Update</button>
+                        <button type="button" class="btn btn-warning btn-sm" ng-click="editingMode(zone, false)">Cancel</button>
+                    </div>
                 </td>
             </tr>
             <tr>
