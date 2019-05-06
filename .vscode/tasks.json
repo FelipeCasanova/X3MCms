@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/com.X3MCms.Core.MVC/com.X3MCms.Core.MVC.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
