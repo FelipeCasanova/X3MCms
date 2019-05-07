@@ -45,22 +45,22 @@ namespace Pages.API.Infrastructure.Services
             return await _pageRepository.GetRootAsync();
         }
 
-        public async Task<IEnumerable<dynamic>> GetAllPagesPopulateAsync()
+        public async Task<IEnumerable<PagePopulatedDTO>> GetAllPagesPopulateAsync()
         {
             return await _pageRepository.GetAllPagesPopulateAsync();
         }
 
-        public async Task<IEnumerable<dynamic>> GetPagePopulateAsync(string pageId)
+        public async Task<IEnumerable<PagePopulatedDTO>> GetPagePopulateAsync(string pageId)
         {
             return await _pageRepository.GetPagePopulateAsync(pageId);
         }
 
-        public async Task<IEnumerable<dynamic>> GetPagePopulateByURLAsync(string url)
+        public async Task<IEnumerable<PagePopulatedDTO>> GetPagePopulateByURLAsync(string url)
         {
             return await _pageRepository.GetPagePopulateByURLAsync(url);
         }
 
-        public async Task<IEnumerable<dynamic>> GetRootPopulateAsync()
+        public async Task<IEnumerable<PagePopulatedDTO>> GetRootPopulateAsync()
         {
             return await _pageRepository.GetRootPopulateAsync();
         }

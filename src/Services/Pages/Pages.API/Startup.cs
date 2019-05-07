@@ -55,6 +55,7 @@ namespace Pages.API
                     options.Filters.Add(typeof(HttpGlobalExceptionFilter));
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .AddXmlSerializerFormatters()
                 .AddControllersAsServices();
 
             services.Configure<PagesSettings>(Configuration);

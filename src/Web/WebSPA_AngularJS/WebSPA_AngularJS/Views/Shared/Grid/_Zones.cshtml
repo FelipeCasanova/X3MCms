@@ -26,14 +26,16 @@
                 </td>
                 <td ng-if="!zone.isEditing">{{zone.type}}</td>
                 <td ng-if="zone.isEditing">
-                    <div class="form-group">
-                        <input type="text" name="type{{ $index }}" ng-model="zone.type" class="form-control" placeholder="Type..."
-                               required ng-trim="true"
-                               ng-class="{'is-invalid': formZone.type{{ $index }}.$error.required }">
-                        <div class="invalid-feedback">
-                            <span ng-show="formZone.type{{ $index }}.$error.required">
-                                Required!
-                            </span>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{zone.type}}
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" ng-click="zone.type='HEADER'" href="#">HEADER</a>
+                            <a class="dropdown-item" ng-click="zone.type='BANNER_LEFT'" href="#">BANNER LEFT</a>
+                            <a class="dropdown-item" ng-click="zone.type='BANNER_RIGHT'" href="#">BANNER RIGHT</a>
+                            <a class="dropdown-item" ng-click="zone.type='CENTRE'" href="#">CENTRE</a>
+                            <a class="dropdown-item" ng-click="zone.type='FOOTER'" href="#">FOOTER</a>
                         </div>
                     </div>
                 </td>
@@ -63,14 +65,16 @@
                     </div>
                 </td>
                 <td>
-                    <div class="form-group">
-                        <input type="text" name="type" ng-model="newZone.type" class="form-control" placeholder="Type..."
-                               required ng-trim="true"
-                               ng-class="{'is-invalid': formZone.type.$error.required }">
-                        <div class="invalid-feedback">
-                            <span ng-show="formZone.type.$error.required">
-                                Required!
-                            </span>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{newZone.type}}
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" ng-click="newZone.type='HEADER'" href="#">HEADER</a>
+                            <a class="dropdown-item" ng-click="newZone.type='BANNER_LEFT'" href="#">BANNER LEFT</a>
+                            <a class="dropdown-item" ng-click="newZone.type='BANNER_RIGHT'" href="#">BANNER RIGHT</a>
+                            <a class="dropdown-item" ng-click="newZone.type='CENTRE'" href="#">CENTRE</a>
+                            <a class="dropdown-item" ng-click="newZone.type='FOOTER'" href="#">FOOTER</a>
                         </div>
                     </div>
                 </td>

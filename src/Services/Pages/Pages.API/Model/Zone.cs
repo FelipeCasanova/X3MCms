@@ -1,4 +1,7 @@
 ﻿using System;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace Pages.API.Model
 {
     public enum ZoneEnum : byte
@@ -14,6 +17,7 @@ namespace Pages.API.Model
     {
         public string Id { get; set; }
         public string Name { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public ZoneEnum Type { get; set; }
         public string PageId { get; set; }
     }

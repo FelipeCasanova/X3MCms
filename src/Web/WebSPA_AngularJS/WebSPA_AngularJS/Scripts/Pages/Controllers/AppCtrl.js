@@ -4,8 +4,6 @@
         $scope.currentPage = $scope.currentPagePopulated = $scope.rootPage = {};
         $scope.childrenPagesPopulated = [];
         $scope.breadCrumb = [];
-
-        $scope.newPage = { };
         
         $scope.patterURL = {
             word: /^\s*\w*\s*$/
@@ -30,8 +28,8 @@
 
         if (document.location.pathname == '/') {
             pageService.getRootPagePopulated(function (data) {
-                $scope.currentPagePopulated = $filter('filter')(data, function(value) { return value.parent.parentId == ""})[0];
-                $scope.childrenPagesPopulated = $filter('filter')(data, function(value) { return value.parent.parentId != ""});
+                $scope.currentPagePopulated = $filter('filter')(data, function(value) { return value.page.parentId == ""})[0];
+                $scope.childrenPagesPopulated = $filter('filter')(data, function(value) { return value.page.parentId != ""});
                 console.log(data);
                 console.log("currentPagePopulated: " + $scope.currentPagePopulated);
                 console.log("childrenPagesPopulated: " + $scope.childrenPagesPopulated);
@@ -39,9 +37,9 @@
 
         } else {
             pageService.getPagePopulatedByURL(document.location.pathname, function (data) {
-                $scope.currentPagePopulated = $filter('filter')(data, function(value) { return "/" +  value.parent.url == document.location.pathname })[0];
-                $scope.currentPage = $scope.currentPagePopulated.parent;
-                $scope.z = $filter('filter')(data, function(value) { return "/" +  value.parent.url == document.location.pathname })[0].parent;
+                $scope.currentPagePopulated = $filter('filter')(data, function(value) { return "/" +  value.page.url == document.location.pathname })[0];
+                $scope.currentPage = $scope.currentPagePopulated.page;
+                $scope.z = $filter('filter')(data, function(value) { return "/" +  value.page.url == document.location.pathname })[0].page;
                 console.log(data);
                 console.log("currentPagePopulated: " + $scope.currentPagePopulated);
                 console.log("currentPage: " + $scope.currentPage);
@@ -54,19 +52,20 @@
             });
         }
 
-        $scope.editingMode = function (page, isEditing) {
+        $scope.editingMode = function (item, isEditing) {
             if(isEditing){
-                var pageCopy = {};
-                for (key in page) {
-                    pageCopy[key] = page[key];
+                var itemCopy = {};
+                for (key in item) {
+                    itemCopy[key] = item[key];
                 }
-                page._copy = pageCopy;
-            } else if (page._copy) {
-                for (key in page._copy) {
-                    page[key] = page._copy[key]; 
+                item._copy = itemCopy;
+            } else if (item._copy) {
+                for (key in item._copy) {
+                    item[key] = item._copy[key]; 
                 }
+                delete item._copy; 
             }
-            page.isEditing = isEditing;
+            item.isEditing = isEditing;
         }
 
         $scope.authorize = function () {

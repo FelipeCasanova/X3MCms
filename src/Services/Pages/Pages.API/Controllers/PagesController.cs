@@ -11,6 +11,7 @@ using Pages.API.Model;
 namespace Pages.API.Controllers
 {
     [Route("api/v1/[controller]")]
+    [FormatFilter]
     [ApiController]
     public class PagesController : ControllerBase
     {
@@ -21,9 +22,9 @@ namespace Pages.API.Controllers
             _pageService = pageService;
         }
 
-        // GET api/pages
-        [HttpGet]
-        [ProducesResponseType(typeof(List<Page>), (int)HttpStatusCode.OK)]
+        // GET api/pages/{format?}
+        [HttpGet("{format?}")]
+        [ProducesResponseType(typeof(IEnumerable<Page>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<Page>>> Get()
         {
             var pages = await _pageService.GetAllPagesAsync();
@@ -34,10 +35,10 @@ namespace Pages.API.Controllers
             return pages.ToList();
         }
 
-        // GET api/pages
-        [HttpGet("populated")]
-        [ProducesResponseType(typeof(List<dynamic>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<dynamic>>> GetPopulated()
+        // GET api/pages/populated/{format?}
+        [HttpGet("populated/{format?}")]
+        [ProducesResponseType(typeof(IEnumerable<PagePopulatedDTO>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<PagePopulatedDTO>>> GetPopulated()
         {
             var pages = await _pageService.GetAllPagesPopulateAsync();
             if (pages is null)
@@ -47,8 +48,8 @@ namespace Pages.API.Controllers
             return pages.ToList();
         }
 
-        // GET api/pages/{id}
-        [HttpGet("{id}")]
+        // GET api/pages/{id:guid}.{format?}
+        [HttpGet("{id:guid}.{format?}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<Page>> GetAsync(string id)
@@ -61,11 +62,11 @@ namespace Pages.API.Controllers
             return pages.ToList().First();
         }
 
-        // GET api/pages/populated/{id}
-        [HttpGet("populated/{id}")]
+        // GET api/pages/populated/{id:guid}.{format?}
+        [HttpGet("populated/{id:guid}.{format?}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<dynamic>> GetPopulatedAsync(string id)
+        [ProducesResponseType(typeof(IEnumerable<PagePopulatedDTO>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<PagePopulatedDTO>>> GetPopulatedAsync(string id)
         {
             var pages = await _pageService.GetPagePopulateAsync(id);
             if (pages is null || !pages.Any())
@@ -76,7 +77,7 @@ namespace Pages.API.Controllers
         }
 
         // GET api/pages/root
-        [HttpGet("root")]
+        [HttpGet("root/{format?}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<Page>> GetRootAsync(string id)
@@ -89,11 +90,11 @@ namespace Pages.API.Controllers
             return pages.ToList().First();
         }
 
-        // GET api/pages/populated/root
-        [HttpGet("populated/root")]
+        // GET api/pages/populated/root/{format?}
+        [HttpGet("populated/root/{format?}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
-        public async Task<ActionResult<dynamic>> GetPopulatedRootAsync(string id)
+        [ProducesResponseType(typeof(IEnumerable<PagePopulatedDTO>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<PagePopulatedDTO>>> GetPopulatedRootAsync(string id)
         {
             var pages = await _pageService.GetRootPopulateAsync();
             if (pages is null || !pages.Any())
@@ -103,8 +104,8 @@ namespace Pages.API.Controllers
             return pages.ToList();
         }
 
-        // GET api/pages/url/{url}
-        [HttpGet("url/{url}")]
+        // GET api/pages/url/{url}.{format?}
+        [HttpGet("url/{url}.{format?}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<Page>> GetByURLAsync(string url)
@@ -117,11 +118,11 @@ namespace Pages.API.Controllers
             return pages.ToList().First();
         }
 
-        // GET api/pages/populated/url/{url}
-        [HttpGet("populated/url/{url}")]
+        // GET api/pages/populated/url/{url}.{format?}
+        [HttpGet("populated/url/{url}.{format?}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<dynamic>> GetPopulatedByURLAsync(string url)
+        [ProducesResponseType(typeof(IEnumerable<PagePopulatedDTO>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<PagePopulatedDTO>>> GetPopulatedByURLAsync(string url)
         {
             var pages = await _pageService.GetPagePopulateByURLAsync(url);
             if (pages is null || !pages.Any())
@@ -131,10 +132,10 @@ namespace Pages.API.Controllers
             return pages.ToList();
         }
 
-        // GET api/pages/breadcrumb/url/{url}
-        [HttpGet("breadcrumb/url/{url}")]
+        // GET api/pages/breadcrumb/url/{url}.{format?}
+        [HttpGet("breadcrumb/url/{url}.{format?}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        [ProducesResponseType(typeof(Page), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<Page>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<Page>>> GetBreadCrumbToTheRootByURLAsync(string url)
         {
             var pages = await _pageService.GetPageBreadCrumbToTheRootAsync(url);
@@ -167,8 +168,8 @@ namespace Pages.API.Controllers
             return CreatedAtAction(nameof(GetAsync), new { id = page.Id }, page);
         }
 
-        // PUT api/pages/{id}
-        [HttpPut("{id}")]
+        // PUT api/pages/{id:guid}
+        [HttpPut("{id:guid}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -188,8 +189,8 @@ namespace Pages.API.Controllers
             return CreatedAtAction(nameof(GetAsync), new { id = page.Id }, page);
         }
 
-        // PUT api/pages/{id}/name/{name}
-        [HttpPut("{id}/name/{name}")]
+        // PUT api/pages/{id:guid}/name/{name}
+        [HttpPut("{id:guid}/name/{name}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -209,8 +210,8 @@ namespace Pages.API.Controllers
             return CreatedAtAction(nameof(GetAsync), new { id }, null);
         }
 
-        // DELETE api/pages/{id}
-        [HttpDelete("{id}")]
+        // DELETE api/pages/{id:guid}
+        [HttpDelete("{id:guid}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]

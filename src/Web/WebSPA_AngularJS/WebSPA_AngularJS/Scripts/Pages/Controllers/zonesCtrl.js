@@ -1,12 +1,14 @@
 ﻿app.controller('ZonesCtrl', ['$scope', '$filter', '$element', '$animate', 'zoneService', 'securityService'
-    , function($scope, $filter, $element, $animate, zoneService, securityService){
+    , function($scope, $filter, $element, $animate, zoneService, securityService) {
+
+    $scope.newZone = { type: 'CENTRE' };
     
     $scope.addZone = function () {
         var newZone = { id: "", name: $scope.newZone.name, type: $scope.newZone.type, pageId: $scope.currentPage.id };
         if (securityService.isAuthorize()) {
             zoneService.addZone(newZone, function(zone){
                 $scope.currentPagePopulated.zones.push(zone);
-                $scope.newZone = { };
+                $scope.newZone = { type: 'CENTRE' };
             });
         } else {
             securityService.authorize();

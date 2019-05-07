@@ -231,7 +231,7 @@ namespace Pages.API.Infrastructure.Repositories
             }
         }
 
-        public async Task<IEnumerable<dynamic>> GetAllPagesPopulateAsync()
+        public async Task<IEnumerable<PagePopulatedDTO>> GetAllPagesPopulateAsync()
         {
             using (var client = _context.Factory.Create())
             {
@@ -239,8 +239,9 @@ namespace Pages.API.Infrastructure.Repositories
                     .Match("(p:Page)")
                     .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
-                    .Return((p, c, z) => new {
-                        Parent = p.As<Page>(), 
+                    .Return((p, c, z) => new PagePopulatedDTO
+                     {
+                        Page = p.As<Page>(), 
                         Zones = z.CollectAsDistinct<Zone>(),
                         Children = c.CollectAsDistinct<Page>()
                     })
@@ -248,7 +249,7 @@ namespace Pages.API.Infrastructure.Repositories
             }
         }
 
-        public async Task<IEnumerable<dynamic>> GetPagePopulateAsync(string pageId)
+        public async Task<IEnumerable<PagePopulatedDTO>> GetPagePopulateAsync(string pageId)
         {
             using (var client = _context.Factory.Create())
             {
@@ -257,8 +258,9 @@ namespace Pages.API.Infrastructure.Repositories
                     .Where((Page p) => p.Id == pageId)
                     .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
-                    .Return((p, c, z) => new {
-                        Parent = p.As<Page>(),
+                    .Return((p, c, z) => new PagePopulatedDTO
+                    {
+                        Page = p.As<Page>(),
                         Zones = z.CollectAsDistinct<Zone>(),
                         Children = c.CollectAsDistinct<Page>()
                     })
@@ -266,8 +268,9 @@ namespace Pages.API.Infrastructure.Repositories
                     .Match("(p:Page)-[:PARENT_OF*1]->(c:Page)")
                     .Where((Page p) => p.ParentId == pageId)
                     .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
-                    .Return((p, c, z) => new {
-                        Parent = p.As<Page>(),
+                    .Return((p, c, z) => new PagePopulatedDTO
+                     {
+                        Page = p.As<Page>(),
                         Zones = z.CollectAsDistinct<Zone>(),
                         Children = c.CollectAsDistinct<Page>()
                     })
@@ -275,7 +278,7 @@ namespace Pages.API.Infrastructure.Repositories
             }
         }
 
-        public async Task<IEnumerable<dynamic>> GetPagePopulateByURLAsync(string url)
+        public async Task<IEnumerable<PagePopulatedDTO>> GetPagePopulateByURLAsync(string url)
         {
             using (var client = _context.Factory.Create())
             {
@@ -284,8 +287,9 @@ namespace Pages.API.Infrastructure.Repositories
                     .Where((Page p) => p.URL == url)
                     .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
-                    .Return((p, c, z) => new {
-                        Parent = p.As<Page>(),
+                    .Return((p, c, z) => new PagePopulatedDTO 
+                    {
+                        Page = p.As<Page>(),
                         Zones = z.CollectAsDistinct<Zone>(),
                         Children = c.CollectAsDistinct<Page>()
                     })
@@ -294,8 +298,9 @@ namespace Pages.API.Infrastructure.Repositories
                     .Where((Page p) => p.URL == url)
                     .OptionalMatch("(p2:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p2)-[:HAS_ZONE]->(z)")
-                    .Return((p2, c, z) => new {
-                        Parent = p2.As<Page>(),
+                    .Return((p2, c, z) => new PagePopulatedDTO
+                    {
+                        Page = p2.As<Page>(),
                         Zones = z.CollectAsDistinct<Zone>(),
                         Children = c.CollectAsDistinct<Page>()
                     })
@@ -303,7 +308,7 @@ namespace Pages.API.Infrastructure.Repositories
             }
         }
 
-        public async Task<IEnumerable<dynamic>> GetRootPopulateAsync()
+        public async Task<IEnumerable<PagePopulatedDTO>> GetRootPopulateAsync()
         {
             using (var client = _context.Factory.Create())
             {
@@ -312,8 +317,9 @@ namespace Pages.API.Infrastructure.Repositories
                     .Where((Page p) => p.ParentId == String.Empty)
                     .OptionalMatch("(p:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p)-[:HAS_ZONE]->(z)")
-                    .Return((p, c, z) => new {
-                        Parent = p.As<Page>(),
+                    .Return((p, c, z) => new PagePopulatedDTO
+                     {
+                        Page = p.As<Page>(),
                         Zones = z.CollectAsDistinct<Zone>(),
                         Children = c.CollectAsDistinct<Page>()
                     })
@@ -322,8 +328,9 @@ namespace Pages.API.Infrastructure.Repositories
                     .Where((Page p) => p.ParentId == String.Empty)
                     .OptionalMatch("(p2:Page)-[:PARENT_OF]->(c:Page)")
                     .OptionalMatch("(p2)-[:HAS_ZONE]->(z)")
-                    .Return((p2, c, z) => new {
-                        Parent = p2.As<Page>(),
+                    .Return((p2, c, z) => new PagePopulatedDTO
+                    {
+                        Page = p2.As<Page>(),
                         Zones = z.CollectAsDistinct<Zone>(),
                         Children = c.CollectAsDistinct<Page>()
                     })

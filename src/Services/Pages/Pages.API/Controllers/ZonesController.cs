@@ -11,6 +11,7 @@ using Pages.API.Model;
 namespace Pages.API.Controllers
 {
     [Route("api/v1/[controller]")]
+    [FormatFilter]
     [ApiController]
     public class ZonesController : ControllerBase
     {
@@ -21,8 +22,8 @@ namespace Pages.API.Controllers
             _zoneService = zoneService;
         }
 
-        // GET api/zones
-        [HttpGet]
+        // GET api/zones/{format?}
+        [HttpGet("{format?}")]
         [ProducesResponseType(typeof(List<Zone>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<Zone>>> Get()
         {
@@ -34,8 +35,8 @@ namespace Pages.API.Controllers
             return zones.ToList();
         }
 
-        // GET api/zones/{id}
-        [HttpGet("{id}")]
+        // GET api/zones/{id:guid}.{format?}
+        [HttpGet("{id:guid}.{format?}")]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(Zone), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<Zone>> GetAsync(string id)
@@ -69,8 +70,8 @@ namespace Pages.API.Controllers
             return CreatedAtAction(nameof(GetAsync), new { id = zone.Id }, zone);
         }
 
-        // PUT api/zones/{id}
-        [HttpPut("{id}")]
+        // PUT api/zones/{id:guid}
+        [HttpPut("{id:guid}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -91,7 +92,7 @@ namespace Pages.API.Controllers
         }
 
         // PUT api/zones/{id}/name/{name}
-        [HttpPut("{id}/name/{name}")]
+        [HttpPut("{id:guid}/name/{name}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -112,7 +113,7 @@ namespace Pages.API.Controllers
         }
 
         // PUT api/zones/{id}/type/{type}
-        [HttpPut("{id}/type/{type}")]
+        [HttpPut("{id:guid}/type/{type}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -133,7 +134,7 @@ namespace Pages.API.Controllers
         }
 
         // DELETE api/zones/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         [Authorize]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
